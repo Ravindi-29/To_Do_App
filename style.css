@@ -430,3 +430,276 @@ select:focus {
         overflow: visible;
     }
 }
+
+/* Auth Panel Styles */
+.auth-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.auth-box {
+    background: var(--win-panel);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--win-shadow);
+    width: 100%;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+    text-align: center;
+}
+
+.auth-box h2 {
+    margin-bottom: 20px;
+    color: var(--win-accent);
+}
+
+#auth-toggle-text {
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+#toggle-auth-mode {
+    color: var(--win-accent);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 350px;
+    width: 90%;
+}
+
+#otp-input {
+    width: 100%;
+    margin: 15px 0;
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: 5px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ===== Tab Navigation ===== */
+.app-tabs {
+    display: flex;
+    gap: 10px;
+    padding: 0 5px;
+}
+
+.tab-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--win-text);
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+    background: var(--win-accent);
+    color: white;
+}
+
+.tab-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* ===== Admin Panel ===== */
+.admin-section {
+    margin-bottom: 30px;
+}
+
+.admin-section-title {
+    font-size: 1.1rem;
+    color: var(--win-accent);
+    border-bottom: 2px solid var(--win-accent);
+    padding-bottom: 6px;
+    margin-bottom: 15px;
+}
+
+/* Users Grid */
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.user-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    border-top: 4px solid var(--win-accent);
+    transition: transform 0.2s;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+}
+
+.user-card .user-name {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.user-card .user-email {
+    font-size: 0.8rem;
+    color: #777;
+    margin: 3px 0 8px;
+}
+
+.user-card .user-stats {
+    display: flex;
+    gap: 8px;
+    font-size: 0.82rem;
+}
+
+.stat-pill {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.stat-pill.total {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.stat-pill.done {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.stat-pill.pend {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+/* Admin Filter Bar */
+.admin-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+}
+
+.admin-filter-bar label {
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.admin-filter-bar select {
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--win-border);
+    font-size: 0.88rem;
+}
+
+/* Admin Task List Table */
+.admin-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-task-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 120px 90px 80px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border-left: 4px solid #ccc;
+    font-size: 0.88rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s;
+}
+
+.admin-task-row:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-task-row.admin-type {
+    border-left-color: var(--admin-color);
+}
+
+.admin-task-row.user-type {
+    border-left-color: var(--user-color);
+}
+
+.admin-task-row.completed-row {
+    opacity: 0.6;
+}
+
+.admin-task-row .task-owner {
+    color: var(--win-accent);
+    font-weight: 600;
+}
+
+.admin-task-row .task-day-label {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.admin-tasks-header {
+    display: grid;
+    grid-template-columns: 1fr 120px 120px 90px 80px;
+    gap: 10px;
+    padding: 6px 14px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.admin-delete-btn {
+    background: none;
+    border: none;
+    color: #d13438;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.admin-delete-btn:hover {
+    background: rgba(209, 52, 56, 0.1);
+}
