@@ -704,24 +704,11 @@ select:focus {
     background: rgba(209, 52, 56, 0.1);
 }
 
-/* Footer */
-footer {
-  padding: 4rem 0 2rem;
-  background: var(--bg-light);
-  border-top: 1px solid var(--glass-border);
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3rem;
-}
-
-.copyright {
-  text-align: center;
-  padding-top: 2rem;
-  border-top: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+.footer{
+    width:100%;
+    text-align:center;
+    padding:15px 0;
+    margin-top:20px;
+    font-size:14px;
+    color:#333;
 }
