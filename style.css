@@ -703,3 +703,25 @@ select:focus {
 .admin-delete-btn:hover {
     background: rgba(209, 52, 56, 0.1);
 }
+
+/* Footer */
+footer {
+  padding: 4rem 0 2rem;
+  background: var(--bg-light);
+  border-top: 1px solid var(--glass-border);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.copyright {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
