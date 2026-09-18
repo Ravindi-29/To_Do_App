@@ -1,5 +1,5 @@
 // Constants
-const API_URL = '"https://to-do-backend-app.azurewebsites.net"';
+const API_URL = "https://to-do-backend-app.azurewebsites.net";
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 // State
@@ -98,6 +98,28 @@ function setupAuthListeners() {
             user = null;
             location.reload(); // Refresh to clear state
         };
+    }
+}
+
+async function register(username, email, password, role) {
+    try {
+        const res = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email, password, role })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            alert('Registration successful! Please log in.');
+            // Switch back to login mode after successful registration
+            const toggleBtn = document.getElementById('toggle-auth-mode');
+            if (toggleBtn) toggleBtn.click();
+        } else {
+            alert(data.message || 'Registration failed.');
+        }
+    } catch (err) {
+        alert('Cannot connect to server. Please make sure the backend is running.');
     }
 }
 
