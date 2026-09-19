@@ -7,6 +7,7 @@ const taskSchema = new mongoose.Schema({
     completed: { type: Boolean, default: false },
     type: { type: String, enum: ['Admin', 'User'], required: true },
     missed: { type: Boolean, default: false },
+    time: { type: String, default: "" }, // E.g., "09:00", "11:30"
     weekStartDate: { type: Date, required: true } // Identification of which week this belongs to
 }, { timestamps: true });
 

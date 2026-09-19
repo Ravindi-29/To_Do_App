@@ -60,12 +60,13 @@ exports.getAllUsers = async (req, res) => {
 // Add Task
 exports.addTask = async (req, res) => {
     try {
-        const { text, assignedDayIndex, type } = req.body;
+        const { text, assignedDayIndex, type, time } = req.body;
         const task = new Task({
             userId: req.user.id,
             text,
             assignedDayIndex,
             type,
+            time: time || "",
             weekStartDate: new Date()
         });
         await task.save();
@@ -90,6 +91,7 @@ exports.updateTask = async (req, res) => {
         if (req.body.completed !== undefined) task.completed = req.body.completed;
         if (req.body.assignedDayIndex !== undefined) task.assignedDayIndex = req.body.assignedDayIndex;
         if (req.body.text !== undefined) task.text = req.body.text;
+        if (req.body.time !== undefined) task.time = req.body.time;
         await task.save();
         res.status(200).json(task);
     } catch (error) {

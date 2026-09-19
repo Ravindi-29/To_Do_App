@@ -295,8 +295,10 @@ async function loadTasks() {
 async function addTask() {
     const input = document.getElementById('task-name');
     const daySelect = document.getElementById('task-day');
+    const timeInput = document.getElementById('task-time');
     const text = input.value.trim();
     const assignedDayIndex = DAYS_OF_WEEK.indexOf(daySelect.value);
+    const time = timeInput ? timeInput.value : '';
 
     if (!text) return;
 
@@ -307,14 +309,33 @@ async function addTask() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${user.token}`
             },
-            body: JSON.stringify({ text, assignedDayIndex, type: user.role })
+            body: JSON.stringify({ text, assignedDayIndex, type: user.role, time })
         });
         if (res.ok) {
             input.value = '';
+            if (timeInput) timeInput.value = '';
             await loadTasks();
         }
     } catch (err) {
         alert('Failed to add task');
+    }
+}
+
+async function updateTaskTime(id, time) {
+    try {
+        const res = await fetch(`${API_URL}/tasks/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            },
+            body: JSON.stringify({ time })
+        });
+        if (res.ok) {
+            await loadTasks();
+        }
+    } catch (err) {
+        alert('Failed to update task time');
     }
 }
 
@@ -393,16 +414,35 @@ function renderApp() {
             const taskHeader = document.createElement('div');
             taskHeader.className = 'task-header';
 
+            const headerLeft = document.createElement('div');
+            headerLeft.style.display = 'flex';
+            headerLeft.style.alignItems = 'center';
+            headerLeft.style.gap = '6px';
+
             const badge = document.createElement('span');
             badge.className = `task-type-badge ${task.type.toLowerCase()}-badge`;
             badge.textContent = task.missed ? `Missed / ${task.type}` : task.type;
+            headerLeft.appendChild(badge);
+
+            if (task.time) {
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'task-time-badge';
+                timeSpan.title = 'Click to update scheduled time';
+                timeSpan.innerHTML = `<i class="far fa-clock"></i> ${task.time}`;
+                timeSpan.onclick = async (e) => {
+                    e.stopPropagation();
+                    const newTime = prompt(`Update scheduled time for "${task.text}" (HH:MM):`, task.time || "");
+                    if (newTime !== null) await updateTaskTime(task._id, newTime.trim());
+                };
+                headerLeft.appendChild(timeSpan);
+            }
 
             const delBtn = document.createElement('button');
             delBtn.className = 'delete-btn';
             delBtn.innerHTML = '<i class="fas fa-trash"></i>';
             delBtn.onclick = () => deleteTask(task._id);
 
-            taskHeader.appendChild(badge);
+            taskHeader.appendChild(headerLeft);
             taskHeader.appendChild(delBtn);
 
             const taskBody = document.createElement('div');
@@ -558,8 +598,15 @@ function renderTimeline() {
 
     const dayTasks = tasks.filter(t => t.assignedDayIndex === dayOfWeekIndex);
 
-    // Realistic time slots to display matching the reference mockup
-    const timeSlots = ["09:00", "11:00", "12:00", "14:00", "16:00", "18:00"];
+    // Collect standard slots + any custom task times
+    const baseSlots = ["09:00", "11:00", "12:00", "14:00", "16:00", "18:00"];
+    const allSlotsSet = new Set(baseSlots);
+    dayTasks.forEach(t => {
+        if (t.time && t.time.trim()) {
+            allSlotsSet.add(t.time.trim());
+        }
+    });
+    const timeSlots = Array.from(allSlotsSet).sort();
 
     const currentHours = String(today.getHours()).padStart(2, '0');
     const currentMinutes = String(today.getMinutes()).padStart(2, '0');
@@ -567,7 +614,7 @@ function renderTimeline() {
 
     let insertedLive = false;
 
-    timeSlots.forEach((slot, idx) => {
+    timeSlots.forEach((slot) => {
         // If viewing today and live time belongs before/around this slot
         if (isSelectedToday && !insertedLive && liveTimeStr <= slot) {
             insertedLive = true;
@@ -575,17 +622,26 @@ function renderTimeline() {
         }
 
         const slotRow = document.createElement('div');
-        slotRow.className = 'timeline-slot';
+        slotRow.className = 'timeline-slot clickable-slot';
+        slotRow.title = `Click to schedule a new task at ${slot}`;
         slotRow.innerHTML = `
             <span class="timeline-slot-time">${slot}</span>
             <div class="timeline-slot-line"></div>
         `;
+        slotRow.onclick = () => {
+            const timeInput = document.getElementById('task-time');
+            const nameInput = document.getElementById('task-name');
+            if (timeInput) timeInput.value = slot;
+            if (nameInput) {
+                nameInput.focus();
+                nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
         listEl.appendChild(slotRow);
 
-        // Display task mapped to this slot if available
-        if (dayTasks[idx]) {
-            appendTaskPill(listEl, dayTasks[idx]);
-        }
+        // Display tasks assigned to this exact slot
+        const matchingTasks = dayTasks.filter(t => t.time === slot);
+        matchingTasks.forEach(t => appendTaskPill(listEl, t));
     });
 
     // If live time is after all standard slots and today
@@ -593,15 +649,23 @@ function renderTimeline() {
         appendNowIndicator(listEl, liveTimeStr);
     }
 
-    // Display any additional tasks beyond standard slots
-    if (dayTasks.length > timeSlots.length) {
-        for (let i = timeSlots.length; i < dayTasks.length; i++) {
-            appendTaskPill(listEl, dayTasks[i]);
-        }
-    } else if (dayTasks.length === 0) {
+    // Display any untimed tasks
+    const untimedTasks = dayTasks.filter(t => !t.time);
+    if (untimedTasks.length > 0) {
+        const untimedHeader = document.createElement('div');
+        untimedHeader.className = 'timeline-slot';
+        untimedHeader.innerHTML = `
+            <span class="timeline-slot-time" style="font-size:0.7rem;color:#64748b;">Anytime</span>
+            <div class="timeline-slot-line"></div>
+        `;
+        listEl.appendChild(untimedHeader);
+        untimedTasks.forEach(t => appendTaskPill(listEl, t));
+    }
+
+    if (dayTasks.length === 0) {
         const emptyEl = document.createElement('div');
         emptyEl.className = 'timeline-empty';
-        emptyEl.innerHTML = `<i class="far fa-calendar-check" style="font-size:1.4rem;margin-bottom:6px;display:block;opacity:0.7;"></i>No tasks scheduled for ${dayName}`;
+        emptyEl.innerHTML = `<i class="far fa-calendar-check" style="font-size:1.4rem;margin-bottom:6px;display:block;opacity:0.7;"></i>No tasks scheduled for ${dayName}<br><small style="color:#94a3b8;">Click any hour above to add a task!</small>`;
         listEl.appendChild(emptyEl);
     }
 }
@@ -645,6 +709,20 @@ function appendTaskPill(container, task) {
 
     const actions = document.createElement('div');
     actions.className = 'timeline-task-actions';
+
+    const timeBtn = document.createElement('button');
+    timeBtn.type = 'button';
+    timeBtn.className = 'timeline-time-btn';
+    timeBtn.title = 'Click to update scheduled time';
+    timeBtn.innerHTML = `<i class="far fa-clock"></i> ${task.time || 'Set time'}`;
+    timeBtn.onclick = async (e) => {
+        e.stopPropagation();
+        const entered = prompt(`Update scheduled time for "${task.text}" (format HH:MM, e.g. 11:30 or 14:00):`, task.time || "");
+        if (entered !== null) {
+            await updateTaskTime(task._id, entered.trim());
+        }
+    };
+    actions.appendChild(timeBtn);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'timeline-del-btn';
