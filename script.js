@@ -116,10 +116,11 @@ async function register(username, email, password, role) {
             const toggleBtn = document.getElementById('toggle-auth-mode');
             if (toggleBtn) toggleBtn.click();
         } else {
-            alert(data.message || 'Registration failed.');
+            alert(data.message || data.error || 'Registration failed.');
         }
     } catch (err) {
-        alert('Cannot connect to server. Please make sure the backend is running.');
+        console.error('Registration network error:', err);
+        alert(`Cannot connect to server at ${API_URL}. Please make sure the backend is running and CORS is allowed.`);
     }
 }
 
@@ -147,10 +148,11 @@ async function login(email, password) {
                 handleLoginSuccess(data);
             }
         } else {
-            alert(data.message || "Login failed");
+            alert(data.message || data.error || "Login failed");
         }
     } catch (err) {
-        alert('Cannot connect to server. Please make sure the backend is running.');
+        console.error('Login network error:', err);
+        alert(`Cannot connect to server at ${API_URL}. Please make sure the backend is running and CORS is allowed.`);
     }
 }
 
