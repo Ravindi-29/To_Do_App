@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'todo_app_jwt_secret_key_default_2026';
+
 // Helper to generate 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -40,7 +42,7 @@ exports.login = async (req, res) => {
         //     return res.status(200).json({ status: 'verification_required', userId: user._id });
         // }
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
         res.status(200).json({ token, role: user.role, username: user.username });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -60,7 +62,7 @@ exports.verifyOTP = async (req, res) => {
         user.otpExpires = undefined;
         await user.save();
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
         res.status(200).json({ token, role: user.role, username: user.username });
     } catch (error) {
         res.status(500).json({ error: error.message });
