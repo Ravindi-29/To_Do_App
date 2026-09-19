@@ -60,13 +60,22 @@ exports.getAllUsers = async (req, res) => {
 // Add Task
 exports.addTask = async (req, res) => {
     try {
-        const { text, assignedDayIndex, type, time } = req.body;
+        const { text, assignedDayIndex, type, time, date, isRecurring } = req.body;
+        
+        let dayIdx = assignedDayIndex;
+        if (date && (dayIdx === undefined || dayIdx === null || dayIdx === -1)) {
+            const parsed = new Date(date + 'T00:00:00');
+            dayIdx = parsed.getDay() === 0 ? 6 : parsed.getDay() - 1;
+        }
+
         const task = new Task({
             userId: req.user.id,
             text,
-            assignedDayIndex,
+            assignedDayIndex: (dayIdx !== undefined && dayIdx !== null) ? dayIdx : 0,
             type,
             time: time || "",
+            date: date || "",
+            isRecurring: !!isRecurring,
             weekStartDate: new Date()
         });
         await task.save();
@@ -92,6 +101,8 @@ exports.updateTask = async (req, res) => {
         if (req.body.assignedDayIndex !== undefined) task.assignedDayIndex = req.body.assignedDayIndex;
         if (req.body.text !== undefined) task.text = req.body.text;
         if (req.body.time !== undefined) task.time = req.body.time;
+        if (req.body.date !== undefined) task.date = req.body.date;
+        if (req.body.isRecurring !== undefined) task.isRecurring = req.body.isRecurring;
         await task.save();
         res.status(200).json(task);
     } catch (error) {

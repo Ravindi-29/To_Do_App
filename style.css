@@ -174,6 +174,7 @@ input:checked+.slider:before {
 }
 
 input[type="text"],
+input[type="date"],
 select {
     padding: 10px;
     border: 1px solid var(--win-border);
@@ -182,11 +183,47 @@ select {
     font-size: 1rem;
     outline: none;
     transition: border 0.3s;
+    width: 100%;
 }
 
 input[type="text"]:focus,
+input[type="date"]:focus,
 select:focus {
     border-color: var(--win-accent);
+}
+
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: -6px;
+    margin-bottom: 15px;
+    font-size: 0.86rem;
+    color: #444;
+    user-select: none;
+}
+
+.form-group-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.form-group-checkbox label {
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.recurring-badge {
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
 
 .btn-primary,

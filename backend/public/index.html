@@ -83,23 +83,22 @@
                         <input type="text" id="task-name" placeholder="E.g., Finish report..." required>
                     </div>
 
-                    <div class="form-group" id="day-selection-group">
-                        <label for="task-day">Assign to Day</label>
-                        <select id="task-day">
-                            <option value="Monday">Monday</option>
-                            <option value="Tuesday">Tuesday</option>
-                            <option value="Wednesday">Wednesday</option>
-                            <option value="Thursday">Thursday</option>
-                            <option value="Friday">Friday</option>
-                            <option value="Saturday">Saturday</option>
-                            <option value="Sunday">Sunday</option>
-                        </select>
+                    <div class="form-group" id="date-selection-group">
+                        <label for="task-date">Assign to Date</label>
+                        <input type="date" id="task-date" required>
+                    </div>
+
+                    <div class="form-group-checkbox" id="recurring-group">
+                        <input type="checkbox" id="task-recurring">
+                        <label for="task-recurring" id="task-recurring-label">🔁 Repeat every week on this day</label>
                     </div>
 
                     <div class="form-group" id="time-selection-group">
                         <label for="task-time">Scheduled Time (Optional)</label>
                         <input type="time" id="task-time">
                     </div>
+
+                    <input type="hidden" id="task-day" value="Monday">
 
                     <button type="submit" class="btn-primary">➕ Add Task</button>
                 </form>

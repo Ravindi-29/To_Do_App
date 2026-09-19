@@ -8,6 +8,8 @@ const taskSchema = new mongoose.Schema({
     type: { type: String, enum: ['Admin', 'User'], required: true },
     missed: { type: Boolean, default: false },
     time: { type: String, default: "" }, // E.g., "09:00", "11:30"
+    date: { type: String, default: "" }, // E.g., "2026-09-22"
+    isRecurring: { type: Boolean, default: false }, // If true, repeats weekly on assignedDayIndex
     weekStartDate: { type: Date, required: true } // Identification of which week this belongs to
 }, { timestamps: true });
 

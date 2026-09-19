@@ -52,6 +52,25 @@ function init() {
     renderTimeline();
 }
 
+function formatDateISO(d) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function updateRecurringLabel() {
+    const dateInput = document.getElementById('task-date');
+    const label = document.getElementById('task-recurring-label');
+    if (!dateInput || !label) return;
+    const val = dateInput.value;
+    if (val) {
+        const d = new Date(val + 'T00:00:00');
+        const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+        label.textContent = `🔁 Repeat every ${DAYS_OF_WEEK[dayIdx]}`;
+    }
+}
+
 function updateRealTimeDay() {
     let jsDay = new Date().getDay();
     currentDayIndex = jsDay === 0 ? 6 : jsDay - 1;
@@ -60,6 +79,11 @@ function updateRealTimeDay() {
     const daySelect = document.getElementById('task-day');
     if (daySelect) {
         daySelect.value = DAYS_OF_WEEK[currentDayIndex];
+    }
+    const dateInput = document.getElementById('task-date');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = formatDateISO(new Date());
+        updateRecurringLabel();
     }
 }
 
@@ -244,6 +268,11 @@ function setupAppListeners() {
         };
     }
 
+    const dateInput = document.getElementById('task-date');
+    if (dateInput) {
+        dateInput.onchange = updateRecurringLabel;
+    }
+
     if (simulateBtn) {
         simulateBtn.onclick = () => {
             currentDayIndex = (currentDayIndex + 1) % 7;
@@ -294,11 +323,19 @@ async function loadTasks() {
 
 async function addTask() {
     const input = document.getElementById('task-name');
-    const daySelect = document.getElementById('task-day');
+    const dateInput = document.getElementById('task-date');
     const timeInput = document.getElementById('task-time');
+    const recurCheck = document.getElementById('task-recurring');
     const text = input.value.trim();
-    const assignedDayIndex = DAYS_OF_WEEK.indexOf(daySelect.value);
+    const date = dateInput ? dateInput.value : '';
     const time = timeInput ? timeInput.value : '';
+    const isRecurring = recurCheck ? recurCheck.checked : false;
+
+    let assignedDayIndex = currentDayIndex;
+    if (date) {
+        const d = new Date(date + 'T00:00:00');
+        assignedDayIndex = d.getDay() === 0 ? 6 : d.getDay() - 1;
+    }
 
     if (!text) return;
 
@@ -309,11 +346,12 @@ async function addTask() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${user.token}`
             },
-            body: JSON.stringify({ text, assignedDayIndex, type: user.role, time })
+            body: JSON.stringify({ text, assignedDayIndex, type: user.role, time, date, isRecurring })
         });
         if (res.ok) {
             input.value = '';
             if (timeInput) timeInput.value = '';
+            if (recurCheck) recurCheck.checked = false;
             await loadTasks();
         }
     } catch (err) {
@@ -373,27 +411,41 @@ function renderApp() {
     if (!grid) return;
     grid.innerHTML = '';
 
+    const now = new Date();
+    const currentWeekdayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - currentWeekdayIndex);
+
     DAYS_OF_WEEK.forEach((dayName, index) => {
         const col = document.createElement('div');
         col.className = 'day-column';
         if (index === currentDayIndex) col.classList.add('current-day-col');
 
+        const colDate = new Date(monday);
+        colDate.setDate(monday.getDate() + index);
+        const colDateStr = formatDateISO(colDate);
+
         const header = document.createElement('h3');
         header.className = 'day-header';
         
         const titleSpan = document.createElement('span');
-        titleSpan.textContent = dayName + (index === currentDayIndex ? " (Today)" : "");
+        titleSpan.textContent = `${dayName} ${colDate.getDate()}` + (index === currentDayIndex ? " (Today)" : "");
         header.appendChild(titleSpan);
 
         const quickAddBtn = document.createElement('button');
         quickAddBtn.className = 'quick-add-day-btn';
         quickAddBtn.type = 'button';
-        quickAddBtn.title = `Add task for ${dayName}`;
+        quickAddBtn.title = `Add task for ${dayName}, ${colDate.getDate()}`;
         quickAddBtn.innerHTML = '<i class="fas fa-plus"></i>';
         quickAddBtn.onclick = (e) => {
             e.stopPropagation();
+            const dateInput = document.getElementById('task-date');
             const daySelect = document.getElementById('task-day');
             const input = document.getElementById('task-name');
+            if (dateInput) {
+                dateInput.value = colDateStr;
+                updateRecurringLabel();
+            }
             if (daySelect) daySelect.value = dayName;
             if (input) {
                 input.focus();
@@ -405,7 +457,13 @@ function renderApp() {
         const taskListContainer = document.createElement('div');
         taskListContainer.className = 'task-list';
 
-        const dayTasks = tasks.filter(t => t.assignedDayIndex === index);
+        // Filter tasks: matching exact date for this week OR recurring for this weekday
+        const dayTasks = tasks.filter(t => {
+            if (t.date) {
+                return t.date === colDateStr || (t.isRecurring && t.assignedDayIndex === index);
+            }
+            return t.assignedDayIndex === index;
+        });
 
         dayTasks.forEach(task => {
             const taskEl = document.createElement('div');
@@ -418,11 +476,19 @@ function renderApp() {
             headerLeft.style.display = 'flex';
             headerLeft.style.alignItems = 'center';
             headerLeft.style.gap = '6px';
+            headerLeft.style.flexWrap = 'wrap';
 
             const badge = document.createElement('span');
             badge.className = `task-type-badge ${task.type.toLowerCase()}-badge`;
             badge.textContent = task.missed ? `Missed / ${task.type}` : task.type;
             headerLeft.appendChild(badge);
+
+            if (task.isRecurring) {
+                const recBadge = document.createElement('span');
+                recBadge.className = 'recurring-badge';
+                recBadge.textContent = '🔁 Weekly';
+                headerLeft.appendChild(recBadge);
+            }
 
             if (task.time) {
                 const timeSpan = document.createElement('span');
@@ -529,6 +595,7 @@ function renderCalendar() {
         cell.textContent = day;
 
         const cellDate = new Date(calCurrentYear, calCurrentMonth, day);
+        const cellDateStr = `${calCurrentYear}-${String(calCurrentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const dayOfWeekIndex = cellDate.getDay() === 0 ? 6 : cellDate.getDay() - 1; // 0=Mon, 6=Sun
 
         // Is today?
@@ -545,8 +612,13 @@ function renderCalendar() {
             cell.classList.add('selected');
         }
 
-        // Has tasks for this day of week?
-        const dayTasks = tasks.filter(t => t.assignedDayIndex === dayOfWeekIndex);
+        // Has tasks for this specific date, or recurring for this weekday?
+        const dayTasks = tasks.filter(t => {
+            if (t.date) {
+                return t.date === cellDateStr || (t.isRecurring && t.assignedDayIndex === dayOfWeekIndex);
+            }
+            return t.assignedDayIndex === dayOfWeekIndex;
+        });
         if (dayTasks.length > 0) {
             cell.classList.add('has-tasks');
         }
@@ -554,6 +626,11 @@ function renderCalendar() {
         // Click handler to select this date
         cell.onclick = () => {
             calSelectedDate = new Date(calCurrentYear, calCurrentMonth, day);
+            const dateInput = document.getElementById('task-date');
+            if (dateInput) {
+                dateInput.value = cellDateStr;
+                updateRecurringLabel();
+            }
             const daySelect = document.getElementById('task-day');
             if (daySelect) {
                 daySelect.value = DAYS_OF_WEEK[dayOfWeekIndex];
@@ -589,14 +666,20 @@ function renderTimeline() {
         calSelectedDate.getDate() === today.getDate()
     );
 
+    const selectedDateStr = formatDateISO(calSelectedDate);
     const dayOfWeekIndex = calSelectedDate.getDay() === 0 ? 6 : calSelectedDate.getDay() - 1;
     const dayName = DAYS_OF_WEEK[dayOfWeekIndex];
 
     if (badgeEl) {
-        badgeEl.textContent = isSelectedToday ? "Today" : dayName;
+        badgeEl.textContent = isSelectedToday ? "Today" : `${dayName}, ${calSelectedDate.getDate()}`;
     }
 
-    const dayTasks = tasks.filter(t => t.assignedDayIndex === dayOfWeekIndex);
+    const dayTasks = tasks.filter(t => {
+        if (t.date) {
+            return t.date === selectedDateStr || (t.isRecurring && t.assignedDayIndex === dayOfWeekIndex);
+        }
+        return t.assignedDayIndex === dayOfWeekIndex;
+    });
 
     // Collect standard slots + any custom task times
     const baseSlots = ["09:00", "11:00", "12:00", "14:00", "16:00", "18:00"];
@@ -630,7 +713,12 @@ function renderTimeline() {
         `;
         slotRow.onclick = () => {
             const timeInput = document.getElementById('task-time');
+            const dateInput = document.getElementById('task-date');
             const nameInput = document.getElementById('task-name');
+            if (dateInput) {
+                dateInput.value = selectedDateStr;
+                updateRecurringLabel();
+            }
             if (timeInput) timeInput.value = slot;
             if (nameInput) {
                 nameInput.focus();
@@ -665,7 +753,7 @@ function renderTimeline() {
     if (dayTasks.length === 0) {
         const emptyEl = document.createElement('div');
         emptyEl.className = 'timeline-empty';
-        emptyEl.innerHTML = `<i class="far fa-calendar-check" style="font-size:1.4rem;margin-bottom:6px;display:block;opacity:0.7;"></i>No tasks scheduled for ${dayName}<br><small style="color:#94a3b8;">Click any hour above to add a task!</small>`;
+        emptyEl.innerHTML = `<i class="far fa-calendar-check" style="font-size:1.4rem;margin-bottom:6px;display:block;opacity:0.7;"></i>No tasks scheduled for ${dayName}, ${calSelectedDate.getDate()}<br><small style="color:#94a3b8;">Click any hour above to add a task!</small>`;
         listEl.appendChild(emptyEl);
     }
 }
@@ -706,6 +794,16 @@ function appendTaskPill(container, task) {
 
     left.appendChild(check);
     left.appendChild(text);
+
+    if (task.isRecurring) {
+        const recTag = document.createElement('span');
+        recTag.className = 'recurring-badge';
+        recTag.style.fontSize = '0.65rem';
+        recTag.style.padding = '1px 4px';
+        recTag.textContent = '🔁';
+        recTag.title = 'Repeats weekly';
+        left.appendChild(recTag);
+    }
 
     const actions = document.createElement('div');
     actions.className = 'timeline-task-actions';

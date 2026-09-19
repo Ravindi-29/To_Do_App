@@ -29,33 +29,36 @@ The application is deployed on **Microsoft Azure App Service** and connected to 
 * **Admin Privilege:** Admins gain access to a dedicated **Admin Management Panel** to oversee all user activity across the entire system.
 
 ### 📅 2. Interactive Weekly Planner
-* **7-Day Interactive Board:** Organized Monday through Sunday with custom column styling.
-* **Automatic Current Day Highlighting:** Detects and highlights today's column (e.g., *Saturday (Today)*).
-* **Flexible Task Scheduling:**
-  * The **Assign to Day** dropdown automatically defaults to the current day.
-  * **Quick-Add Buttons (`+`):** Clicking the `+` button on any day column header (e.g. Monday, Tuesday) instantly sets the scheduling target to that specific day and focuses the input.
-  * Tasks permanently stay on whichever day the user chooses to schedule them.
+* **7-Day Interactive Board:** Organized Monday through Sunday with dynamic column dates (e.g., `Tuesday 22`) and custom column styling.
+* **Automatic Current Day Highlighting:** Detects and highlights today's column (e.g., *Saturday 19 (Today)*).
+* **Precise Date Assignment & Weekly Recurrence:**
+  * **Specific Date Picker:** Tasks are assigned to an exact calendar date (`YYYY-MM-DD`) via the interactive date picker.
+  * **Weekly Repeat Option (`🔁 Repeat every week on this day`):** Tasks can be set as a one-time task for a specific date (default) or set to repeat weekly on that day.
+  * **Recurring Badges:** Repeating tasks are clearly badged with `🔁 Weekly`.
+  * **Quick-Add Buttons (`+`):** Clicking the `+` button on any day column header instantly selects the exact calendar date for that column in the active week, pre-fills the form, and focuses the task description field.
 * **Simulate Next Day:** A simulation feature that allows advancing the active day to test multi-day workflows.
 
 ### 📋 3. Task Management
 * **Real-time Task Operations:** Add, check off (toggle complete), and delete tasks with instant database persistence.
-* **Role Badges:** Tasks display visual badges distinguishing Admin-created tasks from User tasks.
+* **Role & Recurrence Badges:** Tasks display visual badges distinguishing Admin-created tasks (`Admin`), User tasks (`User`), and recurring tasks (`🔁 Weekly`).
 * **Shared Visibility:** Admin-created tasks are visible to all users, while personal user tasks remain private to their owner.
 
 ### 🗓️ 4. Interactive Calendar & Schedule Timeline Widget
 * **Full Month Calendar Navigator:** Browse months forward and backward (`<` / `>`) with dynamic day-grid generation and year indicator (`2026 ▾`).
 * **Current & Selected Day Highlighting:** Today's date is accentuated with a sleek slate-teal circular badge (`#46605d`), with custom outlines for selected dates.
-* **Task Indicator Badges (`•`):** Dates with scheduled tasks automatically display coral indicator dots.
-* **Dynamic Date Synchronization:** Clicking any day in the calendar grid automatically updates the "Assign to Day" dropdown in the task creation form and filters the schedule timeline.
+* **Accurate Calendar Dot Markers (`•`):** 
+  * Only marks the **specific date** assigned to a task (e.g., only Tuesday September 22nd receives a dot).
+  * Recurring tasks marked with `🔁 Repeat every week` display dots across all matching days of the week throughout the month.
+* **Dynamic Date Synchronization:** Clicking any day in the calendar grid automatically updates the "Assign to Date" picker in the task creation form and filters the schedule timeline to that specific date.
 * **Hourly Schedule Timeline & Real-Time Tracking:**
   * Displays structured hourly time slots (`09:00`, `11:00`, `12:00`, `14:00`, `16:00`, `18:00`).
   * **Real-time Live Indicator:** Features an automated live time marker (`HH:MM ●─────────────`) with a glowing indicator tracking the device's real-time system clock.
   * **Dynamic Slot Expansion:** Tasks scheduled at custom times (e.g., `11:38`, `14:30`) automatically generate dedicated time slots in the timeline.
 * **Interactive Task Time Management:**
   * **Scheduled Time Picker:** Set an exact scheduled time (`HH:MM`) directly from the sidebar "Add New Task" form.
-  * **Clickable Time Slots:** Click any hourly slot ruler in the timeline to instantly populate that time into the task creation form and focus the description field.
+  * **Clickable Time Slots:** Click any hourly slot ruler in the timeline to instantly populate that time and date into the task creation form and focus the description field.
   * **Instant Time Updating:** Click the time badge (`🕒 HH:MM` or `🕒 Set time`) on any task card—in both the Timeline and 7-day Weekly Board—to update or reschedule the time on the fly.
-  * **Interactive Task Cards:** Displays tasks for the active day with instant complete/pending checkboxes and deletion controls.
+  * **Interactive Task Cards:** Displays tasks for the active selected date with instant complete/pending checkboxes, weekly recurrence badges, and deletion controls.
 
 ### 👨‍💼 5. Admin Management Panel
 * **User Statistics Summary Cards:** Live metrics displaying total registered users, total tasks, completed tasks, and pending tasks per user.
@@ -125,8 +128,8 @@ The application is architected as a unified, single-origin full-stack service to
 | Method | Endpoint | Description | Access |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/tasks` | Get all tasks for the authenticated user + shared Admin tasks | Authenticated |
-| `POST` | `/api/tasks` | Create a new task (`text`, `assignedDayIndex`, `type`, `time`) | Authenticated |
-| `PUT` | `/api/tasks/:id` | Update task status (`completed`, `text`, `assignedDayIndex`, `time`) | Owner / Admin |
+| `POST` | `/api/tasks` | Create a new task (`text`, `assignedDayIndex`, `type`, `time`, `date`, `isRecurring`) | Authenticated |
+| `PUT` | `/api/tasks/:id` | Update task status (`completed`, `text`, `assignedDayIndex`, `time`, `date`, `isRecurring`) | Owner / Admin |
 | `DELETE` | `/api/tasks/:id` | Delete a specific task | Owner / Admin |
 | `GET` | `/api/tasks/all` | Get all tasks created by all users across the platform | Admin Only |
 | `GET` | `/api/tasks/users` | Get user activity metrics (total, completed, pending tasks) | Admin Only |
