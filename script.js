@@ -274,8 +274,6 @@ async function addTask() {
         });
         if (res.ok) {
             input.value = '';
-            // Reset back to current day after adding
-            if (daySelect) daySelect.value = DAYS_OF_WEEK[currentDayIndex];
             await loadTasks();
         }
     } catch (err) {

@@ -5,23 +5,11 @@ const User = require('../models/User');
 exports.getTasks = async (req, res) => {
     try {
         const userId = req.user.id;
-        const currentDayIndex = new Date().getDay();
-        const normalizedDayIndex = currentDayIndex === 0 ? 6 : currentDayIndex - 1;
 
         // Users see their own tasks + all Admin-created (shared) tasks
         const tasks = await Task.find({
             $or: [{ userId: userId }, { type: 'Admin' }]
         }).populate('userId', 'username email');
-
-        // Smart Rearrangement
-        let updated = false;
-        tasks.forEach(task => {
-            if (!task.completed && !task.missed && task.assignedDayIndex < normalizedDayIndex) {
-                task.assignedDayIndex = normalizedDayIndex;
-                updated = true;
-            }
-        });
-        if (updated) await Promise.all(tasks.map(t => t.save()));
 
         res.status(200).json(tasks);
     } catch (error) {
