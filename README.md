@@ -42,17 +42,29 @@ The application is deployed on **Microsoft Azure App Service** and connected to 
 * **Role Badges:** Tasks display visual badges distinguishing Admin-created tasks from User tasks.
 * **Shared Visibility:** Admin-created tasks are visible to all users, while personal user tasks remain private to their owner.
 
-### 👨‍💼 4. Admin Management Panel
+### 🗓️ 4. Interactive Calendar & Schedule Timeline Widget
+* **Full Month Calendar Navigator:** Browse months forward and backward (`<` / `>`) with dynamic day-grid generation and year indicator (`2026 ▾`).
+* **Current & Selected Day Highlighting:** Today's date is accentuated with a sleek slate-teal circular badge (`#46605d`), with custom outlines for selected dates.
+* **Task Indicator Badges (`•`):** Dates with scheduled tasks automatically display coral indicator dots.
+* **Dynamic Date Synchronization:** Clicking any day in the calendar grid automatically updates the "Assign to Day" dropdown in the task creation form and filters the schedule timeline.
+* **Hourly Schedule Timeline:**
+  * Displays structured hourly time slots from `09:00` to `18:00`.
+  * **Real-time Indicator Bar:** Features a live time marker (`HH:MM ●─────────────`) with a glowing indicator pinpointing the current time.
+  * **Interactive Task Cards:** Displays tasks for the active day with instant complete/pending checkboxes and deletion controls.
+
+### 👨‍💼 5. Admin Management Panel
 * **User Statistics Summary Cards:** Live metrics displaying total registered users, total tasks, completed tasks, and pending tasks per user.
 * **Global Task Monitoring:** View all tasks across all users with real-time filtering:
   * Filter by User (filter by specific user or view all).
   * Filter by Status (*All*, *Pending*, *Completed*).
 * **Admin Deletion Authority:** Administrators can delete inappropriate or completed tasks from any user.
 
-### 🎨 5. Modern UI & Branding
-* Clean **Glassmorphism / Fluent UI design** with smooth transitions and backdrop blur.
-* Responsive design for desktop, tablet, and mobile browsers.
-* Custom bottom bar branding: `© 2026 Ravindi Ranthilini. Built with ❤️ and Passion.`
+### 🎨 6. Modern UI, Custom Background & Branding
+* **Custom Abstract Wave Background:** Elegant dual-tone slate background accented with flowing coral and luminous green wave ribbons (`bg.jpg`).
+* **Fluent Glassmorphism UI:** Translucent frosted panels (`rgba(255, 255, 255, 0.85)`), backdrop blur, and modern typography.
+* **Multi-Panel Ergonomic Dashboard:** Seamless three-panel layout featuring the Task Sidebar, 7-Day Weekly Board, and Calendar & Timeline widget.
+* **Responsive Architecture:** Flex and CSS Grid layouts that adapt smoothly to desktop, tablet, and mobile screens.
+* **Custom Branding:** Bottom bar branding: `© 2026 Ravindi Ranthilini. Built with ❤️ and Passion.`
 
 ---
 
