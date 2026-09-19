@@ -704,11 +704,54 @@ select:focus {
     background: rgba(209, 52, 56, 0.1);
 }
 
-.footer{
-    width:100%;
-    text-align:center;
-    padding:15px 0;
-    margin-top:20px;
-    font-size:14px;
-    color:#333;
+.footer {
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #444;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 0 0 10px 10px;
+    margin-top: 15px;
 }
+
+.auth-footer {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 0.8rem;
+    color: #777;
+    text-align: center;
+}
+
+.quick-add-day-btn {
+    background: rgba(0, 120, 212, 0.12);
+    color: var(--win-accent);
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto;
+}
+
+.quick-add-day-btn:hover {
+    background: var(--win-accent);
+    color: white;
+    transform: scale(1.15);
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+

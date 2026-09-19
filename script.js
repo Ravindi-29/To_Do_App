@@ -45,6 +45,10 @@ function updateRealTimeDay() {
     currentDayIndex = jsDay === 0 ? 6 : jsDay - 1;
     const display = document.getElementById('current-day-display');
     if (display) display.textContent = DAYS_OF_WEEK[currentDayIndex];
+    const daySelect = document.getElementById('task-day');
+    if (daySelect) {
+        daySelect.value = DAYS_OF_WEEK[currentDayIndex];
+    }
 }
 
 // Auth Logic
@@ -189,6 +193,10 @@ function showApp(isLoggedIn) {
     if (auth) auth.style.display = isLoggedIn ? 'none' : 'flex';
     if (app) app.style.display = isLoggedIn ? 'block' : 'none';
 
+    if (isLoggedIn) {
+        updateRealTimeDay();
+    }
+
     if (isLoggedIn && user) {
         document.getElementById('user-name-display').textContent = user.username;
         const badge = document.getElementById('role-badge');
@@ -228,6 +236,8 @@ function setupAppListeners() {
         simulateBtn.onclick = () => {
             currentDayIndex = (currentDayIndex + 1) % 7;
             document.getElementById('current-day-display').textContent = DAYS_OF_WEEK[currentDayIndex];
+            const daySelect = document.getElementById('task-day');
+            if (daySelect) daySelect.value = DAYS_OF_WEEK[currentDayIndex];
             renderApp();
         };
     }
@@ -264,6 +274,8 @@ async function addTask() {
         });
         if (res.ok) {
             input.value = '';
+            // Reset back to current day after adding
+            if (daySelect) daySelect.value = DAYS_OF_WEEK[currentDayIndex];
             await loadTasks();
         }
     } catch (err) {
@@ -312,7 +324,27 @@ function renderApp() {
 
         const header = document.createElement('h3');
         header.className = 'day-header';
-        header.textContent = dayName + (index === currentDayIndex ? " (Today)" : "");
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = dayName + (index === currentDayIndex ? " (Today)" : "");
+        header.appendChild(titleSpan);
+
+        const quickAddBtn = document.createElement('button');
+        quickAddBtn.className = 'quick-add-day-btn';
+        quickAddBtn.type = 'button';
+        quickAddBtn.title = `Add task for ${dayName}`;
+        quickAddBtn.innerHTML = '<i class="fas fa-plus"></i>';
+        quickAddBtn.onclick = (e) => {
+            e.stopPropagation();
+            const daySelect = document.getElementById('task-day');
+            const input = document.getElementById('task-name');
+            if (daySelect) daySelect.value = dayName;
+            if (input) {
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
+        header.appendChild(quickAddBtn);
 
         const taskListContainer = document.createElement('div');
         taskListContainer.className = 'task-list';
