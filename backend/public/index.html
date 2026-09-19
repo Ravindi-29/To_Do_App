@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Planner & To-Do List</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="auth-container" class="auth-panel">
+        <div class="auth-box">
+            <h2 id="auth-title">Login</h2>
+            <form id="auth-form">
+                <div class="form-group" id="username-group" style="display: none;">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="auth-email">Email</label>
+                    <input type="email" id="auth-email" placeholder="Enter email" required>
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" placeholder="Enter password" required>
+                </div>
+                <div class="form-group" id="role-selection-group" style="display: none;">
+                    <label for="reg-role">Role</label>
+                    <select id="reg-role">
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="btn-primary">Login</button>
+            </form>
+            <p id="auth-toggle-text">Don't have an account? <span id="toggle-auth-mode">Sign Up</span></p>
+        </div>
+    </div>
+
+    <!-- OTP Modal -->
+    <div id="otp-modal" class="modal" style="display: none;">
+        <div class="modal-content auth-box">
+            <h2>Admin Verification</h2>
+            <p>Enter the 6-digit code sent to your email.</p>
+            <input type="text" id="otp-input" placeholder="000000" maxlength="6">
+            <button id="verify-otp-btn" class="btn-primary">Verify</button>
+        </div>
+    </div>
+
+    <div class="app-container" id="main-app" style="display: none;">
+        <!-- Header / Role Switcher -->
+        <header class="app-header">
+            <div class="header-title">
+                <h1>Welcome, <span id="user-name-display">User</span></h1>
+            </div>
+            <div class="header-actions">
+                <span id="role-badge" class="task-type-badge">User</span>
+                <button id="logout-btn" class="btn-secondary"
+                    style="width: auto; padding: 5px 15px; margin-top: 0;">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs (shown only to Admin) -->
+        <nav class="app-tabs" id="app-tabs" style="display:none;">
+            <button class="tab-btn active" id="tab-planner" onclick="switchTab('planner')">📅 Weekly Planner</button>
+            <button class="tab-btn" id="tab-admin" onclick="switchTab('admin')">👨‍💼 Admin Panel</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar for Adding Tasks (Admin & User) -->
+            <aside class="sidebar windows-panel">
+                <h2>Add New Task</h2>
+                <form id="task-form">
+                    <div class="form-group">
+                        <label for="task-name">Task Description</label>
+                        <input type="text" id="task-name" placeholder="E.g., Finish report..." required>
+                    </div>
+
+                    <div class="form-group" id="day-selection-group">
+                        <label for="task-day">Assign to Day</label>
+                        <select id="task-day">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary">➕ Add Task</button>
+                </form>
+
+                <div class="status-panel">
+                    <h3>Current Day</h3>
+                    <div id="current-day-display" class="highlight-day">Monday</div>
+                    <p class="info-text">Unfinished tasks will automatically move to the current day!</p>
+                    <button id="simulate-next-day" class="btn-secondary">Simulate Next Day ⏩</button>
+                </div>
+            </aside>
+
+            <!-- ===== WEEKLY PLANNER TAB ===== -->
+            <section class="planner-view windows-panel" id="view-planner">
+                <h2>Weekly Planner</h2>
+                <div class="week-grid" id="week-grid">
+                    <!-- Days will be generated by JS -->
+                </div>
+            </section>
+
+            <!-- ===== ADMIN PANEL TAB ===== -->
+            <section class="planner-view windows-panel" id="view-admin" style="display:none;">
+                <h2>👨‍💼 Admin Management Panel</h2>
+
+                <!-- Users Summary -->
+                <div class="admin-section">
+                    <h3 class="admin-section-title">👥 Registered Users</h3>
+                    <div id="users-summary" class="users-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- All Tasks -->
+                <div class="admin-section">
+                    <h3 class="admin-section-title">📋 All Tasks (All Users)</h3>
+                    <div class="admin-filter-bar">
+                        <label>Filter by User:</label>
+                        <select id="filter-user">
+                            <option value="all">All Users</option>
+                        </select>
+                        <label>Filter by Status:</label>
+                        <select id="filter-status">
+                            <option value="all">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <button class="btn-secondary" style="width:auto;padding:5px 12px;margin:0;"
+                            onclick="applyAdminFilters()">🔍 Filter</button>
+                    </div>
+                    <div id="all-tasks-list" class="admin-tasks-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+<div class="main-container">
+
+    <!-- Your planner content -->
+
+    <footer class="footer">
+        <p>&copy; 2024 Ravindi Ranthilini. Built with ❤️ and Passion.</p>
+    </footer>
+
+</div>
+    <!-- Modals or overlays if needed -->
+
+    <script src="script.js"></script>
+</body>
+
+</html>

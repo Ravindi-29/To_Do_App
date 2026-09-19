@@ -3,6 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+const path = require('path');
+
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 
@@ -12,14 +14,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Health / Status Check
-app.get('/', (req, res) => {
-    res.json({
-        status: 'Online',
-        message: 'To-Do Backend API is running successfully'
-    });
-});
+// Serve static frontend files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
+let mongoError = null;
+
+// Health / Status Check
 app.get('/api/health', (req, res) => {
     const dbState = mongoose.connection.readyState;
     const dbStatusMap = {
@@ -32,7 +32,8 @@ app.get('/api/health', (req, res) => {
         status: 'OK',
         database: dbStatusMap[dbState] || 'Unknown',
         hasMongoUri: !!process.env.MONGODB_URI,
-        hasJwtSecret: !!process.env.JWT_SECRET
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        databaseError: mongoError
     });
 });
 
@@ -42,6 +43,11 @@ app.use('/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/tasks', taskRoutes);
 
+// Fallback: Serve frontend index.html for any non-API route
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Database Connection
 if (!process.env.MONGODB_URI) {
     console.error('CRITICAL: MONGODB_URI environment variable is missing! Please configure it in Azure App Service Application Settings.');
@@ -49,9 +55,11 @@ if (!process.env.MONGODB_URI) {
     mongoose.connect(process.env.MONGODB_URI)
         .then(() => {
             console.log('Connected to MongoDB successfully');
+            mongoError = null;
         })
         .catch(err => {
             console.error('MongoDB connection error:', err.message);
+            mongoError = err.message;
         });
 }
 
