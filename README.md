@@ -47,9 +47,14 @@ The application is deployed on **Microsoft Azure App Service** and connected to 
 * **Current & Selected Day Highlighting:** Today's date is accentuated with a sleek slate-teal circular badge (`#46605d`), with custom outlines for selected dates.
 * **Task Indicator Badges (`•`):** Dates with scheduled tasks automatically display coral indicator dots.
 * **Dynamic Date Synchronization:** Clicking any day in the calendar grid automatically updates the "Assign to Day" dropdown in the task creation form and filters the schedule timeline.
-* **Hourly Schedule Timeline:**
-  * Displays structured hourly time slots from `09:00` to `18:00`.
-  * **Real-time Indicator Bar:** Features a live time marker (`HH:MM ●─────────────`) with a glowing indicator pinpointing the current time.
+* **Hourly Schedule Timeline & Real-Time Tracking:**
+  * Displays structured hourly time slots (`09:00`, `11:00`, `12:00`, `14:00`, `16:00`, `18:00`).
+  * **Real-time Live Indicator:** Features an automated live time marker (`HH:MM ●─────────────`) with a glowing indicator tracking the device's real-time system clock.
+  * **Dynamic Slot Expansion:** Tasks scheduled at custom times (e.g., `11:38`, `14:30`) automatically generate dedicated time slots in the timeline.
+* **Interactive Task Time Management:**
+  * **Scheduled Time Picker:** Set an exact scheduled time (`HH:MM`) directly from the sidebar "Add New Task" form.
+  * **Clickable Time Slots:** Click any hourly slot ruler in the timeline to instantly populate that time into the task creation form and focus the description field.
+  * **Instant Time Updating:** Click the time badge (`🕒 HH:MM` or `🕒 Set time`) on any task card—in both the Timeline and 7-day Weekly Board—to update or reschedule the time on the fly.
   * **Interactive Task Cards:** Displays tasks for the active day with instant complete/pending checkboxes and deletion controls.
 
 ### 👨‍💼 5. Admin Management Panel
@@ -120,8 +125,8 @@ The application is architected as a unified, single-origin full-stack service to
 | Method | Endpoint | Description | Access |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/tasks` | Get all tasks for the authenticated user + shared Admin tasks | Authenticated |
-| `POST` | `/api/tasks` | Create a new task (`text`, `assignedDayIndex`, `type`) | Authenticated |
-| `PUT` | `/api/tasks/:id` | Update task status (`completed`, `text`, `assignedDayIndex`) | Owner / Admin |
+| `POST` | `/api/tasks` | Create a new task (`text`, `assignedDayIndex`, `type`, `time`) | Authenticated |
+| `PUT` | `/api/tasks/:id` | Update task status (`completed`, `text`, `assignedDayIndex`, `time`) | Owner / Admin |
 | `DELETE` | `/api/tasks/:id` | Delete a specific task | Owner / Admin |
 | `GET` | `/api/tasks/all` | Get all tasks created by all users across the platform | Admin Only |
 | `GET` | `/api/tasks/users` | Get user activity metrics (total, completed, pending tasks) | Admin Only |
