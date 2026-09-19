@@ -115,6 +115,38 @@
                 </div>
             </section>
 
+            <!-- ===== CALENDAR & TIMELINE PANEL ===== -->
+            <aside class="calendar-widget-panel windows-panel" id="view-calendar-panel">
+                <div class="cal-card">
+                    <div class="cal-top-bar">
+                        <div class="cal-current-date-title" id="cal-header-date">Today</div>
+                        <div class="cal-year-badge" id="cal-header-year">2026 <i class="fas fa-chevron-down"></i></div>
+                    </div>
+                    <div class="cal-nav-row">
+                        <button type="button" class="cal-nav-btn" id="cal-prev-btn" title="Previous Month"><i class="fas fa-chevron-left"></i></button>
+                        <div class="cal-month-name" id="cal-month-name">September</div>
+                        <button type="button" class="cal-nav-btn" id="cal-next-btn" title="Next Month"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="cal-weekdays-row">
+                        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    </div>
+                    <div class="cal-dates-grid" id="cal-dates-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Timeline Schedule Preview -->
+                <div class="cal-timeline-card">
+                    <div class="cal-timeline-header">
+                        <span class="timeline-title">Schedule & Timeline</span>
+                        <span class="timeline-badge" id="timeline-selected-day">Today</span>
+                    </div>
+                    <div class="cal-timeline-list" id="cal-timeline-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </aside>
+
             <!-- ===== ADMIN PANEL TAB ===== -->
             <section class="planner-view windows-panel" id="view-admin" style="display:none;">
                 <h2>👨‍💼 Admin Management Panel</h2>

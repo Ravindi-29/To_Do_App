@@ -1,5 +1,7 @@
 // Constants
-const API_URL = "https://to-do-backend-app-c5a4ecfbcageghfw.eastasia-01.azurewebsites.net";
+const API_URL = (window.location.protocol.startsWith('http') && window.location.origin !== 'null')
+    ? window.location.origin
+    : "https://to-do-backend-app-c5a4ecfbcageghfw.eastasia-01.azurewebsites.net";
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 // State
@@ -11,21 +13,29 @@ let currentDayIndex = 0;
 let isLoginMode = true;
 let pendingAdminUserId = null;
 
+// Calendar State
+let calCurrentYear = new Date().getFullYear();
+let calCurrentMonth = new Date().getMonth();
+let calSelectedDate = new Date();
+
 // Tab switching (Admin only)
 function switchTab(tab) {
     const planner = document.getElementById('view-planner');
     const adminPanel = document.getElementById('view-admin');
+    const calWidget = document.getElementById('view-calendar-panel');
     const tabPlanner = document.getElementById('tab-planner');
     const tabAdmin = document.getElementById('tab-admin');
 
     if (tab === 'planner') {
         planner.style.display = 'flex';
         adminPanel.style.display = 'none';
+        if (calWidget) calWidget.style.display = 'flex';
         tabPlanner.classList.add('active');
         tabAdmin.classList.remove('active');
     } else {
         planner.style.display = 'none';
         adminPanel.style.display = 'block';
+        if (calWidget) calWidget.style.display = 'none';
         tabPlanner.classList.remove('active');
         tabAdmin.classList.add('active');
         loadAdminPanel();
@@ -38,6 +48,8 @@ function init() {
     setupAppListeners();
     checkExistingLogin();
     updateRealTimeDay();
+    renderCalendar();
+    renderTimeline();
 }
 
 function updateRealTimeDay() {
@@ -241,6 +253,31 @@ function setupAppListeners() {
             renderApp();
         };
     }
+
+    const prevCalBtn = document.getElementById('cal-prev-btn');
+    const nextCalBtn = document.getElementById('cal-next-btn');
+
+    if (prevCalBtn) {
+        prevCalBtn.onclick = () => {
+            calCurrentMonth--;
+            if (calCurrentMonth < 0) {
+                calCurrentMonth = 11;
+                calCurrentYear--;
+            }
+            renderCalendar();
+        };
+    }
+
+    if (nextCalBtn) {
+        nextCalBtn.onclick = () => {
+            calCurrentMonth++;
+            if (calCurrentMonth > 11) {
+                calCurrentMonth = 0;
+                calCurrentYear++;
+            }
+            renderCalendar();
+        };
+    }
 }
 
 async function loadTasks() {
@@ -396,6 +433,233 @@ function renderApp() {
         col.appendChild(taskListContainer);
         grid.appendChild(col);
     });
+
+    // Sync Calendar & Timeline
+    renderCalendar();
+    renderTimeline();
+}
+
+// ===== CALENDAR & TIMELINE FUNCTIONS =====
+function renderCalendar() {
+    const datesGrid = document.getElementById('cal-dates-grid');
+    const monthNameEl = document.getElementById('cal-month-name');
+    const headerDateEl = document.getElementById('cal-header-date');
+    const headerYearEl = document.getElementById('cal-header-year');
+
+    if (!datesGrid || !monthNameEl) return;
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    monthNameEl.textContent = monthNames[calCurrentMonth];
+    if (headerYearEl) {
+        headerYearEl.innerHTML = `${calCurrentYear} <i class="fas fa-chevron-down"></i>`;
+    }
+
+    // Format header title like: "Mon, Sep 21"
+    const dayNamesShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (headerDateEl) {
+        headerDateEl.textContent = `${dayNamesShort[calSelectedDate.getDay()]}, ${monthNamesShort[calSelectedDate.getMonth()]} ${calSelectedDate.getDate()}`;
+    }
+
+    datesGrid.innerHTML = '';
+
+    const firstDayIndex = new Date(calCurrentYear, calCurrentMonth, 1).getDay(); // 0 = Sun
+    const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
+
+    const today = new Date();
+    const isThisCurrentMonth = today.getFullYear() === calCurrentYear && today.getMonth() === calCurrentMonth;
+
+    // Trailing days from previous month
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell inactive';
+        cell.textContent = prevMonthDays - i;
+        datesGrid.appendChild(cell);
+    }
+
+    // Days in current month
+    for (let day = 1; day <= totalDays; day++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell';
+        cell.textContent = day;
+
+        const cellDate = new Date(calCurrentYear, calCurrentMonth, day);
+        const dayOfWeekIndex = cellDate.getDay() === 0 ? 6 : cellDate.getDay() - 1; // 0=Mon, 6=Sun
+
+        // Is today?
+        if (isThisCurrentMonth && day === today.getDate()) {
+            cell.classList.add('today');
+        }
+
+        // Is selected?
+        if (
+            calSelectedDate.getFullYear() === calCurrentYear &&
+            calSelectedDate.getMonth() === calCurrentMonth &&
+            calSelectedDate.getDate() === day
+        ) {
+            cell.classList.add('selected');
+        }
+
+        // Has tasks for this day of week?
+        const dayTasks = tasks.filter(t => t.assignedDayIndex === dayOfWeekIndex);
+        if (dayTasks.length > 0) {
+            cell.classList.add('has-tasks');
+        }
+
+        // Click handler to select this date
+        cell.onclick = () => {
+            calSelectedDate = new Date(calCurrentYear, calCurrentMonth, day);
+            const daySelect = document.getElementById('task-day');
+            if (daySelect) {
+                daySelect.value = DAYS_OF_WEEK[dayOfWeekIndex];
+            }
+            renderCalendar();
+            renderTimeline();
+        };
+
+        datesGrid.appendChild(cell);
+    }
+
+    // Leading days of next month to fill out the grid
+    const totalCellsSoFar = firstDayIndex + totalDays;
+    const remainingCells = (totalCellsSoFar % 7 === 0) ? 0 : 7 - (totalCellsSoFar % 7);
+    for (let j = 1; j <= remainingCells; j++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day-cell inactive';
+        cell.textContent = j;
+        datesGrid.appendChild(cell);
+    }
+}
+
+function renderTimeline() {
+    const listEl = document.getElementById('cal-timeline-list');
+    const badgeEl = document.getElementById('timeline-selected-day');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    const today = new Date();
+    const isSelectedToday = (
+        calSelectedDate.getFullYear() === today.getFullYear() &&
+        calSelectedDate.getMonth() === today.getMonth() &&
+        calSelectedDate.getDate() === today.getDate()
+    );
+
+    const dayOfWeekIndex = calSelectedDate.getDay() === 0 ? 6 : calSelectedDate.getDay() - 1;
+    const dayName = DAYS_OF_WEEK[dayOfWeekIndex];
+
+    if (badgeEl) {
+        badgeEl.textContent = isSelectedToday ? "Today" : dayName;
+    }
+
+    const dayTasks = tasks.filter(t => t.assignedDayIndex === dayOfWeekIndex);
+
+    // Realistic time slots to display matching the reference mockup
+    const timeSlots = ["09:00", "11:00", "12:00", "14:00", "16:00", "18:00"];
+
+    const currentHours = String(today.getHours()).padStart(2, '0');
+    const currentMinutes = String(today.getMinutes()).padStart(2, '0');
+    const liveTimeStr = `${currentHours}:${currentMinutes}`;
+
+    let insertedLive = false;
+
+    timeSlots.forEach((slot, idx) => {
+        // If viewing today and live time belongs before/around this slot
+        if (isSelectedToday && !insertedLive && liveTimeStr <= slot) {
+            insertedLive = true;
+            appendNowIndicator(listEl, liveTimeStr);
+        }
+
+        const slotRow = document.createElement('div');
+        slotRow.className = 'timeline-slot';
+        slotRow.innerHTML = `
+            <span class="timeline-slot-time">${slot}</span>
+            <div class="timeline-slot-line"></div>
+        `;
+        listEl.appendChild(slotRow);
+
+        // Display task mapped to this slot if available
+        if (dayTasks[idx]) {
+            appendTaskPill(listEl, dayTasks[idx]);
+        }
+    });
+
+    // If live time is after all standard slots and today
+    if (isSelectedToday && !insertedLive) {
+        appendNowIndicator(listEl, liveTimeStr);
+    }
+
+    // Display any additional tasks beyond standard slots
+    if (dayTasks.length > timeSlots.length) {
+        for (let i = timeSlots.length; i < dayTasks.length; i++) {
+            appendTaskPill(listEl, dayTasks[i]);
+        }
+    } else if (dayTasks.length === 0) {
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'timeline-empty';
+        emptyEl.innerHTML = `<i class="far fa-calendar-check" style="font-size:1.4rem;margin-bottom:6px;display:block;opacity:0.7;"></i>No tasks scheduled for ${dayName}`;
+        listEl.appendChild(emptyEl);
+    }
+}
+
+function appendNowIndicator(container, timeStr) {
+    const nowSlot = document.createElement('div');
+    nowSlot.className = 'timeline-slot now-indicator';
+    nowSlot.innerHTML = `
+        <span class="timeline-slot-time">${timeStr}</span>
+        <div class="timeline-now-bar">
+            <div class="timeline-now-dot"></div>
+        </div>
+    `;
+    container.appendChild(nowSlot);
+}
+
+function appendTaskPill(container, task) {
+    const pill = document.createElement('div');
+    pill.className = `timeline-task-pill ${task.completed ? 'completed' : ''}`;
+
+    const left = document.createElement('div');
+    left.className = 'timeline-task-left';
+
+    const check = document.createElement('input');
+    check.type = 'checkbox';
+    check.className = 'custom-checkbox';
+    check.checked = task.completed;
+    check.title = task.completed ? 'Mark pending' : 'Mark completed';
+    check.onclick = (e) => {
+        e.stopPropagation();
+        toggleTaskComplete(task._id);
+    };
+
+    const text = document.createElement('span');
+    text.className = 'timeline-task-text';
+    text.textContent = task.text;
+    text.title = task.text;
+
+    left.appendChild(check);
+    left.appendChild(text);
+
+    const actions = document.createElement('div');
+    actions.className = 'timeline-task-actions';
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'timeline-del-btn';
+    delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    delBtn.title = 'Delete Task';
+    delBtn.onclick = (e) => {
+        e.stopPropagation();
+        deleteTask(task._id);
+    };
+
+    actions.appendChild(delBtn);
+
+    pill.appendChild(left);
+    pill.appendChild(actions);
+    container.appendChild(pill);
 }
 
 // ===== ADMIN PANEL FUNCTIONS =====
