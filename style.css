@@ -285,6 +285,95 @@ select:focus {
     flex-direction: column;
 }
 
+.planner-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.planner-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.planner-title-group h2 {
+    margin: 0;
+    font-size: 1.35rem;
+}
+
+.week-range-badge {
+    background: rgba(0, 120, 212, 0.08);
+    color: var(--win-accent);
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 120, 212, 0.25);
+    display: inline-flex;
+    align-items: center;
+}
+
+.week-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.week-nav-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--win-border);
+    color: var(--win-text);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.week-nav-btn:hover {
+    background: white;
+    border-color: var(--win-accent);
+    color: var(--win-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 120, 212, 0.15);
+}
+
+.week-today-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--win-border);
+    color: var(--win-text);
+    padding: 0 12px;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.week-today-btn:hover {
+    background: var(--win-accent);
+    border-color: var(--win-accent);
+    color: white;
+}
+
+.week-today-btn.active {
+    background: rgba(0, 120, 212, 0.12);
+    border-color: var(--win-accent);
+    color: var(--win-accent);
+}
+
 .week-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

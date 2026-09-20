@@ -17,6 +17,7 @@ let pendingAdminUserId = null;
 let calCurrentYear = new Date().getFullYear();
 let calCurrentMonth = new Date().getMonth();
 let calSelectedDate = new Date();
+let weekOffset = 0; // 0 = current week, +1 = next week, -1 = previous week
 
 // Tab switching (Admin only)
 function switchTab(tab) {
@@ -57,6 +58,19 @@ function formatDateISO(d) {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+function getMondayOfDate(d) {
+    const copy = new Date(d);
+    const day = copy.getDay() === 0 ? 6 : copy.getDay() - 1;
+    copy.setDate(copy.getDate() - day);
+    copy.setHours(0, 0, 0, 0);
+    return copy;
+}
+
+function formatShortDate(d) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
 function updateRecurringLabel() {
@@ -275,10 +289,52 @@ function setupAppListeners() {
 
     if (simulateBtn) {
         simulateBtn.onclick = () => {
+            if (currentDayIndex === 6) {
+                // Moving past Sunday into Monday advances week
+                weekOffset++;
+            }
             currentDayIndex = (currentDayIndex + 1) % 7;
             document.getElementById('current-day-display').textContent = DAYS_OF_WEEK[currentDayIndex];
             const daySelect = document.getElementById('task-day');
             if (daySelect) daySelect.value = DAYS_OF_WEEK[currentDayIndex];
+            renderApp();
+        };
+    }
+
+    const prevWeekBtn = document.getElementById('week-prev-btn');
+    const nextWeekBtn = document.getElementById('week-next-btn');
+    const todayWeekBtn = document.getElementById('week-today-btn');
+
+    if (prevWeekBtn) {
+        prevWeekBtn.onclick = () => {
+            weekOffset--;
+            renderApp();
+        };
+    }
+
+    if (nextWeekBtn) {
+        nextWeekBtn.onclick = () => {
+            weekOffset++;
+            renderApp();
+        };
+    }
+
+    if (todayWeekBtn) {
+        todayWeekBtn.onclick = () => {
+            weekOffset = 0;
+            renderApp();
+        };
+    }
+
+    const calHeaderDate = document.getElementById('cal-header-date');
+    if (calHeaderDate) {
+        calHeaderDate.style.cursor = 'pointer';
+        calHeaderDate.title = 'Click to jump to Today';
+        calHeaderDate.onclick = () => {
+            calSelectedDate = new Date();
+            calCurrentYear = calSelectedDate.getFullYear();
+            calCurrentMonth = calSelectedDate.getMonth();
+            weekOffset = 0;
             renderApp();
         };
     }
@@ -412,24 +468,53 @@ function renderApp() {
     grid.innerHTML = '';
 
     const now = new Date();
-    const currentWeekdayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - currentWeekdayIndex);
+    const todayStr = formatDateISO(now);
+    const todayMonday = getMondayOfDate(now);
+
+    const monday = new Date(todayMonday);
+    monday.setDate(todayMonday.getDate() + (weekOffset * 7));
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    // Update week range badge
+    const rangeDisplay = document.getElementById('week-range-display');
+    if (rangeDisplay) {
+        const startStr = formatShortDate(monday);
+        const endStr = formatShortDate(sunday);
+        const yearStr = sunday.getFullYear();
+        let tag = '';
+        if (weekOffset === 0) tag = ' (Current)';
+        else if (weekOffset === 1) tag = ' (Next Week)';
+        else if (weekOffset === -1) tag = ' (Last Week)';
+        rangeDisplay.textContent = `${startStr} – ${endStr}, ${yearStr}${tag}`;
+    }
+
+    const todayWeekBtn = document.getElementById('week-today-btn');
+    if (todayWeekBtn) {
+        if (weekOffset === 0) {
+            todayWeekBtn.classList.add('active');
+        } else {
+            todayWeekBtn.classList.remove('active');
+        }
+    }
 
     DAYS_OF_WEEK.forEach((dayName, index) => {
         const col = document.createElement('div');
         col.className = 'day-column';
-        if (index === currentDayIndex) col.classList.add('current-day-col');
 
         const colDate = new Date(monday);
         colDate.setDate(monday.getDate() + index);
         const colDateStr = formatDateISO(colDate);
 
+        const isToday = (colDateStr === todayStr) || (weekOffset === 0 && index === currentDayIndex);
+        if (isToday) col.classList.add('current-day-col');
+
         const header = document.createElement('h3');
         header.className = 'day-header';
         
         const titleSpan = document.createElement('span');
-        titleSpan.textContent = `${dayName} ${colDate.getDate()}` + (index === currentDayIndex ? " (Today)" : "");
+        titleSpan.textContent = `${dayName} ${colDate.getDate()}` + (isToday ? " (Today)" : "");
         header.appendChild(titleSpan);
 
         const quickAddBtn = document.createElement('button');
@@ -462,7 +547,7 @@ function renderApp() {
             if (t.date) {
                 return t.date === colDateStr || (t.isRecurring && t.assignedDayIndex === index);
             }
-            return t.assignedDayIndex === index;
+            return (weekOffset === 0 && t.assignedDayIndex === index) || (t.isRecurring && t.assignedDayIndex === index);
         });
 
         dayTasks.forEach(task => {
@@ -635,8 +720,14 @@ function renderCalendar() {
             if (daySelect) {
                 daySelect.value = DAYS_OF_WEEK[dayOfWeekIndex];
             }
-            renderCalendar();
-            renderTimeline();
+
+            // Sync Weekly Planner to the week containing this selected date
+            const clickedMonday = getMondayOfDate(calSelectedDate);
+            const baseMonday = getMondayOfDate(new Date());
+            const diffDays = Math.round((clickedMonday.getTime() - baseMonday.getTime()) / (24 * 60 * 60 * 1000));
+            weekOffset = Math.round(diffDays / 7);
+
+            renderApp();
         };
 
         datesGrid.appendChild(cell);
