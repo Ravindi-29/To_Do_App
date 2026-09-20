@@ -24,5 +24,6 @@
 ## Features
 - **Admin & User Roles**: Select your role during sign-up.
 - **Email Verification**: Admins receive a 6-digit code via email upon login.
+- **Multi-Week Navigation**: Browse upcoming and previous weeks with dynamic date calculation and week-range indicators.
 - **Smart Rearrange**: Unfinished tasks from previous days are automatically moved to "Today".
 - **Real-time Persistence**: All tasks and users are stored in MongoDB.

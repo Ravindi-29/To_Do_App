@@ -29,14 +29,18 @@ The application is deployed on **Microsoft Azure App Service** and connected to 
 * **Admin Privilege:** Admins gain access to a dedicated **Admin Management Panel** to oversee all user activity across the entire system.
 
 ### 📅 2. Interactive Weekly Planner
-* **7-Day Interactive Board:** Organized Monday through Sunday with dynamic column dates (e.g., `Tuesday 22`) and custom column styling.
-* **Automatic Current Day Highlighting:** Detects and highlights today's column (e.g., *Saturday 19 (Today)*).
-* **Precise Date Assignment & Weekly Recurrence:**
+* **7-Day Interactive Board:** Organized Monday through Sunday with dynamic column dates (e.g., `Monday 21`, `Tuesday 22`) and custom column styling.
+* **Week Navigation & Multi-Week Browsing (Upcoming & Past Weeks):**
+  * **Navigation Controls (`◀` / `▶`):** Browse forward into upcoming weeks or back into previous weeks with instant date calculation across month and year boundaries.
+  * **`This Week` Quick Jump:** Easily return to the current active calendar week from any future or past week view.
+  * **Dynamic Week Range Badge:** Displays the active week span and status (e.g., `Sep 14 – Sep 20, 2026 (Current)` or `Sep 21 – Sep 27, 2026 (Next Week)`).
+* **Automatic Current Day Highlighting:** Intelligently detects and highlights today's column (e.g., *Sunday 20 (Today)*) only when viewing the active current week.
+* **Precise Date Assignment & Future Task Planning:**
   * **Specific Date Picker:** Tasks are assigned to an exact calendar date (`YYYY-MM-DD`) via the interactive date picker.
-  * **Weekly Repeat Option (`🔁 Repeat every week on this day`):** Tasks can be set as a one-time task for a specific date (default) or set to repeat weekly on that day.
+  * **Weekly Repeat Option (`🔁 Repeat every week on this day`):** Tasks can be set as a one-time task for a specific date (default) or set to repeat weekly on that day across all weeks.
   * **Recurring Badges:** Repeating tasks are clearly badged with `🔁 Weekly`.
-  * **Quick-Add Buttons (`+`):** Clicking the `+` button on any day column header instantly selects the exact calendar date for that column in the active week, pre-fills the form, and focuses the task description field.
-* **Simulate Next Day:** A simulation feature that allows advancing the active day to test multi-day workflows.
+  * **Quick-Add Buttons (`+`):** Clicking the `+` button on any day column header instantly selects the exact calendar date for that column in the active week (including upcoming weeks), pre-fills the form, and focuses the task description field.
+* **Simulate Next Day:** A simulation feature that allows advancing the active day to test multi-day workflows, including rolling forward into the next week when advancing past Sunday.
 
 ### 📋 3. Task Management
 * **Real-time Task Operations:** Add, check off (toggle complete), and delete tasks with instant database persistence.
@@ -49,7 +53,10 @@ The application is deployed on **Microsoft Azure App Service** and connected to 
 * **Accurate Calendar Dot Markers (`•`):** 
   * Only marks the **specific date** assigned to a task (e.g., only Tuesday September 22nd receives a dot).
   * Recurring tasks marked with `🔁 Repeat every week` display dots across all matching days of the week throughout the month.
-* **Dynamic Date Synchronization:** Clicking any day in the calendar grid automatically updates the "Assign to Date" picker in the task creation form and filters the schedule timeline to that specific date.
+* **Dynamic Date & Weekly Planner Synchronization:**
+  * Clicking any day in the calendar grid automatically shifts the 7-day Weekly Planner grid to display the week containing that date.
+  * Updates the "Assign to Date" picker in the task creation form and filters the schedule timeline to that specific date.
+  * Clicking the **Today** header title above the calendar instantly returns both the calendar and the Weekly Planner to the current week.
 * **Hourly Schedule Timeline & Real-Time Tracking:**
   * Displays structured hourly time slots (`09:00`, `11:00`, `12:00`, `14:00`, `16:00`, `18:00`).
   * **Real-time Live Indicator:** Features an automated live time marker (`HH:MM ●─────────────`) with a glowing indicator tracking the device's real-time system clock.
